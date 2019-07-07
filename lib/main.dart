@@ -3,6 +3,8 @@ import 'package:flutter_app/eventbusutil.dart';
 import 'package:flutter_app/shopcart.dart';
 import 'package:event_bus/event_bus.dart';
 
+import 'net/NetRequestUtil.dart';
+
 void main() => runApp(mainApp());
 
 
@@ -57,6 +59,8 @@ List<Production> prods=<Production>[
 
 class _MyHomePageState extends State<MyHomePage> {
   void _clearAll() {
+
+    login("lq1111112","lq1111112",callback:(Map<String, dynamic> map)=> print(map.toString()));
     eventBus.fire(new ClearAllEvent(true));
   }
 

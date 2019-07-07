@@ -5,13 +5,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/model/BannerModel.dart';
 import 'package:flutter_app/net/Constants.dart';
-import 'package:flutter_app/net/NetRequestUtil.dart';
-import 'package:flutter_app/widget/FreshContainer.dart';
+import 'package:flutter_app/util/ItemFactory.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
-import '../main.dart';
-import '../shopcart.dart';
-import 'PaperListview.dart';
+import 'CommonListview.dart';
+
 
 class HomeTabView extends StatefulWidget {
 
@@ -38,7 +36,7 @@ class _TabbedAppBar extends State<HomeTabView>  {
 //    var user = new User.fromJson(userMap);
 //    序列化也一样。调用API与之前相同。
 //    String json = JSON.encode(user);
-      Future.delayed(Duration(milliseconds: 2000),(){ tabsMap.forEach((k, v) => banners.add(BannerModel(title: k,url: v))); })
+      Future((){ tabsMap.forEach((k, v) => banners.add(BannerModel(title: k,url: v))); })
           .then((v){setState(() {isloading=false; });});
 
       return new MaterialApp(
@@ -54,10 +52,10 @@ class _TabbedAppBar extends State<HomeTabView>  {
           length: banners.length,
           child:new Scaffold(
             appBar: new PreferredSize(
-              preferredSize:Size(double.infinity, 70),
+              preferredSize:Size(double.infinity, 50),
               child: Container(
-                padding: EdgeInsets.fromLTRB(0,30,0,0),
-                height:70,
+                alignment: Alignment.center,
+                height:50,
                 decoration: new BoxDecoration(
 //                  border: new Border.all(color: Color(0xFFFFFF00), width: 0.5), // 边色与边宽度
                   color: Color(0xFF4068D1), // 底色
@@ -81,7 +79,7 @@ class _TabbedAppBar extends State<HomeTabView>  {
               children: banners.map((BannerModel ban) {
                 return new Padding(
                   padding: const EdgeInsets.all(5.0),
-                  child: new itemFragment(itemdata: ban),
+                  child: new CommonListview(bannerModel: ban),
                 );
               }).toList(),
             ),
@@ -92,17 +90,6 @@ class _TabbedAppBar extends State<HomeTabView>  {
   }
 }
 
-
-class itemFragment extends StatelessWidget {
-  const itemFragment({ Key key, this.itemdata }) : super(key: key);
-
-  final BannerModel itemdata;
-
-  @override
-  Widget build(BuildContext context) {
-    return PaperListview(bannerModel: itemdata);
-  }
-}
 
 void main() {
   runApp(new HomeTabView());

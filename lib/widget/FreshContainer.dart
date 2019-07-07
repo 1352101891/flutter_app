@@ -7,7 +7,8 @@ class FreshContainer extends StatefulWidget{
   Widget child;
   Refresh refresh;
   LoadMore loadMore;
-  FreshContainer({this.child,this.refresh,this.loadMore});
+  bool needLoadmore;
+  FreshContainer({this.child,this.refresh,this.loadMore,this.needLoadmore});
 
   @override
   _dragStateFul createState() => _dragStateFul();
@@ -54,7 +55,8 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
         alignment:  Alignment.topCenter,
         children: [
           Stack(alignment:  Alignment.bottomCenter,
-            children: [Container(
+            children: [
+            Container(
              alignment: Alignment.bottomCenter,
               child: LoadingWidget(status:uploadStatus,angle: upangle),
               height:50,
@@ -62,7 +64,7 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
 //                color: Color(0xFF4068D1), // 底色
                 shape: BoxShape.rectangle, // 默认值也是矩形
               )
-          ),
+            ),
             Transform.translate(offset: Offset(0, upoffset),
               child: GestureDetector(
                 onVerticalDragStart: _start,
@@ -111,10 +113,13 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
               )
             )
           ]),
-          Transform.translate(
-            offset: Offset(0,offsetDistance),
-            child:LoadingWidget(status: loadingStatus,angle: angle),
-          )
+          Offstage(
+            offstage:!widget.needLoadmore,
+            child:Transform.translate(
+              offset: Offset(0,offsetDistance),
+              child:LoadingWidget(status: loadingStatus,angle: angle)
+            )
+          ),
         ]
     );
   }
@@ -133,10 +138,12 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
       return;
     }
     print("手指抬起：");
-    if(upoffset>upthresold){
-      loadtoPosition(y: 0);
-    }else if(upoffset<=upthresold && upoffset>=1.5*upthresold){
-      loadtoPosition(y: upthresold);
+    if(widget.needLoadmore) {
+      if (upoffset > upthresold) {
+        loadtoPosition(y: 0);
+      } else if (upoffset <= upthresold && upoffset >= 1.5 * upthresold) {
+        loadtoPosition(y: upthresold);
+      }
     }
     if(isUp){
       if(offsetDistance<thresold){
@@ -154,6 +161,10 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
   }
 
   void loadtoPosition({double y}){
+    int dur=duratime;
+    if(y==0){
+      dur=dur*2;
+    }
     double currentY=upoffset;
     AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
     CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controller, curve: Curves.easeIn);
@@ -164,8 +175,12 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
   }
 
   void toPosition({double x,double y}){
+    int dur=duratime;
+    if(y==startPositiony){
+      dur=dur*3;
+    }
     double currentY=offsetDistance;
-    AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
+    AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:dur));
     CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controller, curve: Curves.easeIn);
     Animation<double> animation=new Tween(begin:currentY,end:y).animate(curvedAnimation);
     animation.addListener(()=>{animateUpdate(animation.value)});
@@ -210,17 +225,19 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
 
     if(offsetDistance<startPositiony){
       offsetDistance=startPositiony;
-      upoffset=upoffset+details.delta.dy;
-      if(details.delta.dy<0){
-        uploadStatus=STATUS.PUSH_UP;
-      }else{
-        uploadStatus=STATUS.PULL_DOWN;
-      }
-      if(upoffset<upthresold*1.5){
-        upoffset=upthresold*1.5;
-      }else{
-        upangle= (1.00*(upoffset))/(upthresold*1.5)*ratio;
-        setState(() { });
+      if(widget.needLoadmore) {
+        upoffset = upoffset + details.delta.dy;
+        if (details.delta.dy < 0) {
+          uploadStatus = STATUS.PUSH_UP;
+        } else {
+          uploadStatus = STATUS.PULL_DOWN;
+        }
+        if (upoffset < upthresold * 1.5) {
+          upoffset = upthresold * 1.5;
+        } else {
+          upangle = (1.00 * (upoffset)) / (upthresold * 1.5) * ratio;
+          setState(() {});
+        }
       }
       return;
     }
@@ -243,7 +260,7 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
 
   void doFresh(){
     if(widget.refresh!=null){
-      Future future = new Future.delayed(Duration(milliseconds:1000),() => widget.refresh());
+      Future future = new Future.delayed(Duration(milliseconds:200),() => widget.refresh());
       future.then((_){
         toPosition(y:startPositiony);
         print("刷新结束！");
@@ -252,12 +269,13 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
         print("刷新出错！");
       });
     }
+    print("doFresh！");
   }
 
   void doLoadMore(){
     isLoadingMore=true;
     if(widget.loadMore!=null){
-      Future future = new Future.delayed(Duration(milliseconds:1000),() => widget.loadMore());
+      Future future = new Future.delayed(Duration(milliseconds:200), () => widget.loadMore());
       future.then((_){
         loadtoPosition(y:0);
         print("加载更多结束！");
@@ -268,6 +286,7 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
         isLoadingMore=false;
       });
     }
+    print("doLoadMore！");
   }
 }
 

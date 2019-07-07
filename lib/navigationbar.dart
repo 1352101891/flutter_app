@@ -65,16 +65,16 @@ class drawerLayout extends StatelessWidget{
 
   /// 创建一个平移变换
   /// 跳转过去查看源代码，可以看到有各种各样定义好的变换
-  static SlideTransition createTransition(
+  static FadeTransition createTransition(
       Animation<double> animation, Widget child) {
-//    return new FadeTransition(opacity: new Tween(begin: 1.0,end: 0.0).animate(animation),child: child);
-    return new SlideTransition(
-      position: new Tween<Offset>(
-        begin: const Offset(1.0, 0.0),
-        end: const Offset(0.0, 0.0),
-      ).animate(animation),
-      child: child, // child is the value returned by pageBuilder
-    );
+    return new FadeTransition(opacity: new Tween(begin: 0.0,end: 1.0).animate(animation),child: child);
+//    return new SlideTransition(
+//      position: new Tween<Offset>(
+//        begin: const Offset(1.0, 0.0),
+//        end: const Offset(0.0, 0.0),
+//      ).animate(animation),
+//      child: child, // child is the value returned by pageBuilder
+//    );
   }
 
   void showTip(BuildContext context,String name){
@@ -129,22 +129,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
 
   static List<Widget> _widgetOptions = <Widget>[
     HomeTabView(),
-    MyListView(
-        productions:prods
-    ),
-    Scaffold(
-      body: Center(
-        child:Align(
-          alignment: Alignment.center,
-          child:FreshContainer(
-            child: MyListView(
-              productions: prods,
-            ),
-            refresh:(){ _clearAll();print("测试游戏啊！");},
-          ),
-        )
-      )
-    )
+    MyHomePage(),
+    animationHomePage(),
   ];
 
   static const navigationitem=const <BottomNavigationBarItem>[
