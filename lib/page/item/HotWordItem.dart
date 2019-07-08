@@ -9,7 +9,7 @@ import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/util/util.dart';
 import '../CommonListview.dart';
 
-class HotWordItem extends StatelessWidget with util{
+class HotWordItem extends StatefulWidget with util{
   final bool inCart;
   final HotWordModel p;
   final ClickItem clickItem;
@@ -18,28 +18,63 @@ class HotWordItem extends StatelessWidget with util{
         super(key: new ObjectKey(prod));
 
   @override
+  State<StatefulWidget> createState() {
+    return HotWordState(p.name);
+  }
+}
+
+class HotWordState extends State<HotWordItem> with WidgetsBindingObserver{
+  String name;
+  GlobalKey key;
+  double wrapWidth=80;
+  HotWordState(this.name){
+    key = new GlobalKey(debugLabel: name);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return new GestureDetector(
-      onTap: () {
-        clickItem(!inCart,p,p.name,p.link);
-      },
-      child:Container(
-        alignment: Alignment.center,
-        width: 80,
-        height: 40,
-        decoration:new BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.grey,
-                    offset: Offset(3.0, 3.0)
-                )
-              ],
-              borderRadius:BorderRadius.all(Radius.circular(10.0)),
-                  color: colors[Random().nextInt(6)]
-              )
-        ,child:Text(p.name, textAlign:TextAlign.center,style: inCart?Theme.of(context).textTheme.subhead:Theme.of(context).textTheme.body1)
-        ,padding:EdgeInsets.fromLTRB(5,5,5,5)
-      )
+        onTap: () {
+          widget.clickItem(!widget.inCart,widget.p,widget.p.name,widget.p.link);
+        },
+        child:Container(
+            alignment: Alignment.center,
+            width: wrapWidth,
+            height: 40,
+            decoration:new BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey,
+                      offset: Offset(3.0, 3.0)
+                  )
+                ],
+                borderRadius:BorderRadius.all(Radius.circular(10.0)),
+                color: colors[Random().nextInt(6)]
+            )
+            ,child:Text(widget.p.name,maxLines: 1, key:key, textAlign:TextAlign.center,style:TextStyle(fontSize:14,color: Colors.white))
+            ,padding:EdgeInsets.fromLTRB(5,5,5,5)
+        )
     );
   }
+
+  AppLifecycleState _notification;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() { _notification = state; });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    //监听该视图事件
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((duration){wrapWidth=key.currentContext.size.width;});
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
 }

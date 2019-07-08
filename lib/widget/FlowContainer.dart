@@ -41,7 +41,7 @@ class MyFlowDelegate extends FlowDelegate{
         context.paintChild(i,
           transform: new Matrix4.translationValues(offsetX,offsetY, 0));
         //绘制完成之后，偏移量修正到下一个位置
-        offsetX+= cw;
+        offsetX = cw;
       }
     }
   }
