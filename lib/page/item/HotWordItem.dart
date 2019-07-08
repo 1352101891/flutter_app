@@ -1,14 +1,17 @@
 
 
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/model/HotWord.dart';
+import 'package:flutter_app/model/HotWordModel.dart';
+import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/util/util.dart';
 import '../CommonListview.dart';
 
 class HotWordItem extends StatelessWidget with util{
   final bool inCart;
-  final HotWord p;
+  final HotWordModel p;
   final ClickItem clickItem;
 
   HotWordItem(this.inCart, dynamic prod,this.clickItem):p = prod,
@@ -16,33 +19,27 @@ class HotWordItem extends StatelessWidget with util{
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return new GestureDetector(
       onTap: () {
         clickItem(!inCart,p,p.name,p.link);
       },
-//      leading: new CircleAvatar(
-//        backgroundColor: _getColor(context,inCart),
-//        child: Icon(Icons.insert_emoticon),
-//      ),
-      title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children:<Widget>[
-            new Padding(
-              padding: const EdgeInsets.fromLTRB(0,0,0,8),
-              child:  Text(p.name, style: inCart?Theme.of(context).textTheme.subhead:Theme.of(context).textTheme.body1),
-            ),
-//            Row(
-//                mainAxisAlignment:MainAxisAlignment.end ,
-//                children:<Widget>[
-//                  Text(""+p.link, style: getTextStyle(context,inCart)),
-//                ]
-//            ),
-            Padding(padding:EdgeInsets.fromLTRB(0,10,0,0)),
-            Container(decoration:new BoxDecoration(color: Colors.white)
-                ,padding:EdgeInsets.fromLTRB(0,1,0,0)
-            )
-          ]
-      ),
+      child:Container(
+        alignment: Alignment.center,
+        width: 80,
+        height: 40,
+        decoration:new BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.grey,
+                    offset: Offset(3.0, 3.0)
+                )
+              ],
+              borderRadius:BorderRadius.all(Radius.circular(10.0)),
+                  color: colors[Random().nextInt(6)]
+              )
+        ,child:Text(p.name, textAlign:TextAlign.center,style: inCart?Theme.of(context).textTheme.subhead:Theme.of(context).textTheme.body1)
+        ,padding:EdgeInsets.fromLTRB(5,5,5,5)
+      )
     );
   }
 }

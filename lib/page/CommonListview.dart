@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/eventbusutil.dart';
 import 'package:flutter_app/model/BannerModel.dart';
+import 'package:flutter_app/model/HotWordModel.dart';
+import 'package:flutter_app/model/PaperModel.dart';
+import 'package:flutter_app/model/PaperPageInfo.dart';
+import 'package:flutter_app/model/WebsiteModel.dart';
+import 'package:flutter_app/net/NetRequestUtil.dart';
 import 'package:flutter_app/util/ItemFactory.dart';
+import 'package:flutter_app/widget/FlowContainer.dart';
 import 'package:flutter_app/widget/FreshContainer.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
@@ -16,17 +22,21 @@ class CommonListview extends StatefulWidget {
 
   @override
   State createState(){
-    return getStateByType(bannerModel.title);
+    return getStateByType(bannerModel);
   }
 }
 
 class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientMixin {
+  BannerModel bannerModel;
   Set<T> checkObject=new Set();
-  List<T> data=new List();
+  List<dynamic> data=new List();
   int pageno=0;
   bool isloading=true;
   String message = 'Unknown msg.';
   static const WebviewPage = const MethodChannel('com.flutter.gotowebview');
+
+
+  CommonList(this.bannerModel);
 
   Future<void> getWebviewResult(Map<dynamic, dynamic> map) async {
     String msg;
@@ -44,7 +54,9 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
   @override
   void initState() {
     super.initState();
+    print(bannerModel.title+"getDataSync:之前");
     getDataAsync(pageno);
+    print(bannerModel.title+"getDataSync:之后");
     eventBus.on<ClearAllEvent>().listen((event) {
       print("ClearAllEvent:"+(event.flag?"true":"false"));
       if(event.flag){
@@ -53,17 +65,17 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
     });
   }
 
-  void getDataSync(int pn) async{
-    await actulGetData(pn,this);
-  }
-
   void getDataAsync(int pn){
     actulGetData(pn,this);
   }
 
 
   void setLoadingStatus(bool flag){
-    setState(() {isloading=flag;});
+    if(mounted){
+      setState(() {
+        isloading=flag;
+      });
+    }
   }
 
   @protected
@@ -116,18 +128,25 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
           body: Center(
               child: Align(
                 alignment: Alignment.center,
-                child: FreshContainer(
-                  child: ListView(
-                    //不管什么平台这样设置,对于overscroll都可以监听到
-                    physics: const ClampingScrollPhysics(),
+                child: bannerModel.title=="搜索热词"?
+                  FlowContainer(
+                    delegate: MyFlowDelegate(),
                     children: data.map((p) =>
-                        getWidgetByType(checkObject.contains(p), p, _clickItem)
+                        getItemWidgetByType(checkObject.contains(p), p, _clickItem)
                     ).toList(),
+                  ):
+                  FreshContainer(
+                    child:ListView(
+                      //不管什么平台这样设置,对于overscroll都可以监听到
+                      physics: const ClampingScrollPhysics(),
+                      children: data.map((p) =>
+                          getItemWidgetByType(checkObject.contains(p), p, _clickItem)
+                      ).toList(),
+                    ),
+                    refresh: () => getDataAsync(0),
+                    loadMore: () => getDataAsync(pageno),
+                    needLoadmore: needLoadmoreByType(bannerModel.title),
                   ),
-                  refresh: () => getDataSync(0),
-                  loadMore: () => getDataSync(pageno),
-                  needLoadmore: needLoadmoreByType(widget.bannerModel.title),
-                ),
               )
           )
       );

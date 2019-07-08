@@ -19,6 +19,8 @@ class _dragStateFul extends State<dragWidget> with TickerProviderStateMixin{
   double startPositiony;
   int duratime=200;
   bool isClosed=true;
+  bool isUp=true;
+  AnimationController controllerUp;
 
   _dragStateFul(){
     startPositiony=offsetDistance;
@@ -30,6 +32,13 @@ class _dragStateFul extends State<dragWidget> with TickerProviderStateMixin{
     });
   }
 
+  @override
+  void dispose() {
+    if(controllerUp!=null){
+      controllerUp.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,12 +117,12 @@ class _dragStateFul extends State<dragWidget> with TickerProviderStateMixin{
 
   void toPosition({double x,double y}){
     double currentY=offsetDistance;
-    AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
-    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controller, curve: Curves.easeIn);
+    controllerUp=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
+    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controllerUp, curve: Curves.easeIn);
     Animation<double> animation=new Tween(begin:currentY,end:y).animate(curvedAnimation);
     animation.addListener(()=>{animateUpdate(animation.value)});
     animation.addStatusListener(stateListener);
-    controller.forward();
+    controllerUp.forward();
   }
 
   void stateListener(AnimationStatus status){
@@ -131,7 +140,6 @@ class _dragStateFul extends State<dragWidget> with TickerProviderStateMixin{
     }
   }
 
-  bool isUp=true;
   void _update(DragUpdateDetails details){
 
     offsetDistance=offsetDistance+details.delta.dy;

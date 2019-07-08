@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_app/util/util.dart';
 import 'package:http/http.dart' as http;
 import '../shopcart.dart';
-import 'Constants.dart';
+import 'package:flutter_app/util/Constants.dart';
 
 typedef Callback(Map<String, dynamic> responseData);
 

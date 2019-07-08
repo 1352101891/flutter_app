@@ -98,10 +98,10 @@ class _LoadingStateFul extends State<LoadingWidget> with TickerProviderStateMixi
 
   @override
   void dispose() {
-    super.dispose();
     if(controller!=null){
       controller.dispose();
     }
+    super.dispose();
   }
 
 }

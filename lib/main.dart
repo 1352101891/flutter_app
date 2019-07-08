@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/eventbusutil.dart';
 import 'package:flutter_app/shopcart.dart';
 import 'package:event_bus/event_bus.dart';
+import 'package:flutter_app/util/Constants.dart';
+import 'package:flutter_app/widget/FlowContainer.dart';
 
 import 'net/NetRequestUtil.dart';
 
@@ -101,8 +105,24 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: MyListView(
-            productions:prods
+        child: FlowContainer(
+          delegate: MyFlowDelegate(),
+          children: prods.map((p) => Container(
+              width: 100,
+              height: 50,
+              decoration:new BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(10.0, 10.0)
+                    )
+                  ],
+                  borderRadius:BorderRadius.all(Radius.circular(10.0)),
+                  color: colors[Random().nextInt(4)]
+              )
+              ,child:Text(p.name)
+              ,padding:EdgeInsets.fromLTRB(10,5,10,5)
+          )).toList(),
         ),
       ),
       floatingActionButton: FloatingActionButton(

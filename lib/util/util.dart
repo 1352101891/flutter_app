@@ -43,3 +43,17 @@ setAsyncPrefs(String key,String value) async {
   // 设置存储数据
   await prefs.setString(key, value);
 }
+
+bool isValidList(List list){
+  if(list!=null && list.length>0){
+    return true;
+  }
+  return false;
+}
+
+bool isEmptyString(String str){
+  if(str!=null && str.length>0){
+    return false;
+  }
+  return true;
+}

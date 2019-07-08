@@ -7,7 +7,7 @@ class FreshContainer extends StatefulWidget{
   Widget child;
   Refresh refresh;
   LoadMore loadMore;
-  bool needLoadmore;
+  bool needLoadmore=true;
   FreshContainer({this.child,this.refresh,this.loadMore,this.needLoadmore});
 
   @override
@@ -32,9 +32,28 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
   double upangle=0;
   bool isLoadingMore=false;
   STATUS uploadStatus=STATUS.IDLE;
+  AnimationController controllerUp;
+  AnimationController controllerDown;
 
   _dragStateFul(){
     startPositiony=offsetDistance;
+  }
+
+  /// All Tickers must be disposed before calling super.dispose()
+  @override
+  void dispose() {
+    if(controllerDown!=null){
+      controllerDown.dispose();
+    }
+    if(controllerUp!=null){
+      controllerUp.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    setState(() {});
   }
 
   void animateUpdate(double update){
@@ -77,12 +96,9 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
                   child:NotificationListener<ScrollEndNotification>(
                     child:NotificationListener<ScrollUpdateNotification>(
                       child: NotificationListener<OverscrollNotification>(
-                        child: NotificationListener<ScrollEndNotification>(
-                          child: Offstage(
-                            offstage:false ,
-                            child:widget.child
-                          ),
-                          onNotification: (ScrollEndNotification notification) {
+                        child: NotificationListener<ScrollStartNotification>(
+                          child:widget.child,
+                          onNotification: (ScrollStartNotification notification) {
                             print("滑动结束");
                             return false;
                           },
@@ -166,12 +182,12 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
       dur=dur*2;
     }
     double currentY=upoffset;
-    AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
-    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controller, curve: Curves.easeIn);
+    controllerUp=new AnimationController(vsync: this,duration:Duration(milliseconds:duratime));
+    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controllerUp, curve: Curves.easeIn);
     Animation<double> animation=new Tween(begin:currentY,end:y).animate(curvedAnimation);
     animation.addListener(()=>{upsetUpdate(animation.value)});
     animation.addStatusListener(stateListener);
-    controller.forward();
+    controllerUp.forward();
   }
 
   void toPosition({double x,double y}){
@@ -180,12 +196,12 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
       dur=dur*3;
     }
     double currentY=offsetDistance;
-    AnimationController controller=new AnimationController(vsync: this,duration:Duration(milliseconds:dur));
-    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controller, curve: Curves.easeIn);
+    controllerDown=new AnimationController(vsync: this,duration:Duration(milliseconds:dur));
+    CurvedAnimation curvedAnimation=new CurvedAnimation(parent: controllerDown, curve: Curves.easeIn);
     Animation<double> animation=new Tween(begin:currentY,end:y).animate(curvedAnimation);
     animation.addListener(()=>{animateUpdate(animation.value)});
     animation.addStatusListener(stateListener);
-    controller.forward();
+    controllerDown.forward();
   }
 
   void stateListener(AnimationStatus status){

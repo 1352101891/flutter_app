@@ -4,8 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_app/model/BannerModel.dart';
-import 'package:flutter_app/net/Constants.dart';
+import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/util/ItemFactory.dart';
+import 'package:flutter_app/widget/FixTabBarView.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
 import 'CommonListview.dart';
@@ -19,9 +20,12 @@ class HomeTabView extends StatefulWidget {
   }
 }
 
-class _TabbedAppBar extends State<HomeTabView>  {
+class _TabbedAppBar extends State<HomeTabView>  with SingleTickerProviderStateMixin{
   List<BannerModel> banners=[];
   bool isloading=true;
+  PageController _pageController;
+  TabController _tabController;
+
   //私有方法不可复写
   Color _getColor(BuildContext context) {
     return  Theme.of(context).primaryColor;
@@ -29,15 +33,31 @@ class _TabbedAppBar extends State<HomeTabView>  {
 
 
   @override
-  Widget build(BuildContext context) {
-    if(isloading){
+  void initState() {
 //    要通过json_serializable方式反序列化JSON字符串，我们不需要对先前的代码进行任何更改。
 //    Map userMap = JSON.decode(json);
 //    var user = new User.fromJson(userMap);
 //    序列化也一样。调用API与之前相同。
 //    String json = JSON.encode(user);
-      Future((){ tabsMap.forEach((k, v) => banners.add(BannerModel(title: k,url: v))); })
-          .then((v){setState(() {isloading=false; });});
+    Future((){ tabsMap.forEach((k, v) => banners.add(BannerModel(title: k,url: v))); })
+        .then((v){
+              _tabController = TabController(length: banners.length,vsync: this);
+              _pageController = PageController();
+              setState(() {isloading=false; });
+            });
+  }
+
+  @override
+  void dispose() {
+    if(mounted)
+      _tabController.dispose();
+    super.dispose();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if(isloading){
 
       return new MaterialApp(
           home: new Scaffold(
@@ -48,43 +68,46 @@ class _TabbedAppBar extends State<HomeTabView>  {
         );
     }else{
       return new MaterialApp(
-        home: new DefaultTabController(
-          length: banners.length,
-          child:new Scaffold(
-            appBar: new PreferredSize(
-              preferredSize:Size(double.infinity, 50),
-              child: Container(
-                alignment: Alignment.center,
-                height:50,
-                decoration: new BoxDecoration(
+        home:Scaffold(
+          appBar:PreferredSize(
+            preferredSize:Size(double.infinity, 50),
+            child: Container(
+              alignment: Alignment.center,
+              height:50,
+              decoration: new BoxDecoration(
 //                  border: new Border.all(color: Color(0xFFFFFF00), width: 0.5), // 边色与边宽度
-                  color: Color(0xFF4068D1), // 底色
-                  shape: BoxShape.rectangle, // 默认值也是矩形
-                ),
-                child: new TabBar(
-                  indicatorColor: Color(0xFFFFFFFF),
-                  labelColor: Color(0xFFFFFFFF),
-                  unselectedLabelColor: Color(0XCD333300),
-                  indicatorSize:TabBarIndicatorSize.tab,
-                  isScrollable: true,
-                  tabs: banners.map((BannerModel ban) {
-                    return new Tab(
-                      text: ban.title,
-                    );
-                  }).toList(),
-                ),
+                color: Color(0xFF4068D1), // 底色
+                shape: BoxShape.rectangle, // 默认值也是矩形
+              ),
+              child:TabBar(
+                controller: _tabController,
+                indicatorColor: Color(0xFFFFFFFF),
+                labelColor: Color(0xFFFFFFFF),
+                unselectedLabelColor: Color(0XCD333300),
+                indicatorSize:TabBarIndicatorSize.tab,
+                isScrollable: true,
+                onTap: (index) {
+                  _pageController.jumpToPage(index);
+                },
+                tabs: banners.map((BannerModel ban) {
+                  return new Tab(
+                    text: ban.title,
+                  );
+                }).toList(),
               ),
             ),
-            body: new TabBarView(
-              children: banners.map((BannerModel ban) {
-                return new Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: new CommonListview(bannerModel: ban),
-                );
-              }).toList(),
-            ),
           ),
-        ) ,
+          body:FixTabBarView(
+            pageController: _pageController,
+            tabController: _tabController,
+            children: banners.map((BannerModel ban) {
+              return new Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: new CommonListview(bannerModel: ban),
+              );
+            }).toList(),
+          ),
+        ),
       );
     }
   }

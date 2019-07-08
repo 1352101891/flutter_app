@@ -1,3 +1,15 @@
+
+import 'package:flutter/material.dart';
+
+final Map tabsMap = {
+  "首页文章": homeArticles,
+  "置顶文章": topArticles,
+  "常用网站": hotWebSites,
+  "搜索热词": hotWords,
+};
+
+final colors=[ Colors.blue, Colors.orange, Colors.red, Colors.green,Colors.greenAccent,Colors.purpleAccent];
+
 final String cookieKey="set-cookie";
 final String numKey="num";
 final String articleidKey="articleid";
