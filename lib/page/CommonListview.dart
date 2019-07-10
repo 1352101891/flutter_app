@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/eventbusutil.dart';
+import 'package:flutter_app/util/eventbusutil.dart';
 import 'package:flutter_app/model/BannerModel.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
 import 'package:flutter_app/model/PaperModel.dart';

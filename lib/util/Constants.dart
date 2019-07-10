@@ -1,6 +1,12 @@
 
 import 'package:flutter/material.dart';
 
+final String passwordNullTip="请填写密码！";
+final String wrongSurePasswordTip="两次密码不一致，请重新输入！";
+final String usernameTip="账号长度必须大于6位！";
+final String loginSuccess="登陆成功！";
+final String registerSuccess="注册成功！";
+
 final Map tabsMap = {
   "首页文章": homeArticles,
   "置顶文章": topArticles,
@@ -9,7 +15,8 @@ final Map tabsMap = {
 };
 
 final colors=[ Colors.blue, Colors.orange, Colors.red, Colors.green,Colors.greenAccent,Colors.purpleAccent];
-
+final String msgKey="errorMsg";
+final String codeKey="errorCode";
 final String cookieKey="set-cookie";
 final String numKey="num";
 final String articleidKey="articleid";

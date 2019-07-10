@@ -57,3 +57,11 @@ bool isEmptyString(String str){
   }
   return true;
 }
+
+void showToast(BuildContext context,String str){
+  showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(str),
+      ));
+}

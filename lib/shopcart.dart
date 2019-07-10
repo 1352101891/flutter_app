@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/eventbusutil.dart';
+import 'package:flutter_app/util/eventbusutil.dart';
 
 class Production{
   String price;

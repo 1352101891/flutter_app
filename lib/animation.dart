@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/widget/DragContainer.dart';
 
 import 'main.dart';
-import 'widget/dragContainer.dart';
 
 void main() => runApp(animationApp());
 
@@ -63,7 +63,7 @@ class _MyHomePageState extends State<animationHomePage> with AutomaticKeepAliveC
       body: Center(
         child:Align(
           alignment: Alignment.bottomCenter,
-          child: dragWidget(
+          child:DragWidget(
             child:ListView(
               children: <Widget>[]..addAll(prods.map((f)=>
                   ListTile(

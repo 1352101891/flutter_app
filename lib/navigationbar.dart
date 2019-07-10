@@ -17,7 +17,7 @@ import 'package:flutter_app/shopcart.dart';
 import 'package:flutter_app/widget/FreshContainer.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
-import 'eventbusutil.dart';
+import 'package:flutter_app/util/eventbusutil.dart';
 
 void main() => runApp(MyApp());
 

@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class dragWidget extends StatefulWidget{
+class DragWidget extends StatefulWidget{
   Widget child;
-  dragWidget({this.child});
+  DragWidget({this.child});
 
   @override
   _dragStateFul createState() => _dragStateFul();
 }
 
-class _dragStateFul extends State<dragWidget> with TickerProviderStateMixin{
+class _dragStateFul extends State<DragWidget> with TickerProviderStateMixin{
   double offsetDistance =380.0;
   double destinationy=0;
   double dragHeight=400;
