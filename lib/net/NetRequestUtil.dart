@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_app/util/util.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import '../shopcart.dart';
 import 'package:flutter_app/util/Constants.dart';
 
@@ -39,16 +40,16 @@ typedef Callback(Map<String, dynamic> responseData);
 //"errorCode": 0,
 //"errorMsg": ""
 //}
-void login(String username,String password,{Callback callback}) async{
+void login(String username,String password,{Callback callback}){
   String url= loginUrl+"username="+username+"&password="+password;
-  await post(url,callback:callback);
+  post(url,callback:callback);
 }
 
 
 //同登陆返回数据格式
-void register(String username,String password,String repassword,{Callback callback}) async{
+void register(String username,String password,String repassword,{Callback callback}) {
   String url= registerUrl+"username="+username+"&password="+password+"&repassword="+repassword;
-  await post(url,callback:callback);
+  post(url,callback:callback);
 }
 
 //{
@@ -56,22 +57,56 @@ void register(String username,String password,String repassword,{Callback callba
 //"errorCode": 0,
 //"errorMsg": ""
 //}
-void logout({Callback callback}) async{
-  await get(logoutUrl,callback:callback);
+void logout({Callback callback}) {
+  get(logoutUrl,callback:callback);
 }
 
 
 //get(dynamic url, { Map<String, String> headers }) → Future<Response>
 //(必须)url:请求地址
 //(可选)headers:请求头
-void get(String url,{Callback callback}) async{
-  await http.get(url).then((http.Response response) {
+void get(String url,{Callback callback}) {
+  http.get(url).then((http.Response response) {
     final Map<String, dynamic> responseData = json.decode(response.body);
     callback(responseData);
     //处理响应数据
   }).catchError((error) {
     print('$error错误');
   });
+}
+
+//0是get，1是post
+void request(String url,{int type=0,bool addCookies=true,Object param,Callback callback}) {
+  if(addCookies) {
+    Future<Map<dynamic, dynamic>> future = addCookie(loginUrl);
+    future.then((map){
+      if(type==0){
+        return http.get(url, headers: map);
+      }else{
+        return http.post(url, headers: map, body: json.encode(param), encoding: Utf8Codec());
+      }}
+    ).then((http.Response response) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      callback(responseData);
+      //处理响应数据
+    }).catchError((error) {
+      print('$error错误');
+    });
+  }else{
+    Future<Response>  futureResponce;
+    if(type==0){
+      futureResponce=http.get(url);
+    }else{
+      futureResponce=http.post(url,body: json.encode(param),encoding: Utf8Codec());
+    }
+    futureResponce.then((http.Response response) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      callback(responseData);
+      //处理响应数据
+    }).catchError((error) {
+      print('$error错误');
+    });
+  }
 }
 
 
@@ -81,7 +116,7 @@ void get(String url,{Callback callback}) async{
 //(可选)body:参数
 //(编码)Encoding:编码 例子
 void post(String url,{Object param,Callback callback}){
-  addCookie(url).then((map)=>
+  addCookie(loginUrl).then((map)=>
     http.post(url,headers:map,body: json.encode(param),encoding: Utf8Codec())
   ).then((http.Response response) {
     intercepCookie(response);
@@ -92,6 +127,28 @@ void post(String url,{Object param,Callback callback}){
     print('$error错误');
   });
 }
+
+
+
+Future<Map> addCookie(String url)async{
+  Map<String,String> map = new Map();
+  String cookies=await getAsyncPrefs(url,defaultValue:"");
+  map[requestCookieKey]=cookies;
+  return map;
+}
+
+//set-cookie
+//JSESSIONID=B5287FF2B263655DE4EBBFF323E6BE88; Path=/; Secure; HttpOnly
+void intercepCookie(http.Response response){
+  bool exist=response.headers.containsKey(responseCookieKey);
+  if(exist){
+    String cookie=response.headers[responseCookieKey];
+    setAsyncPrefs(loginUrl,cookie);
+    print("cookie："+cookie);
+  }
+}
+
+
 
 
 void addProduct(Production product) async {
@@ -111,24 +168,5 @@ void addProduct(Production product) async {
 
   } catch (error) {
     print('$error错误');
-  }
-}
-
-
-Future<Map> addCookie(String url)async{
-  Map<String,String> map = new Map();
-  String cookies=await getAsyncPrefs(url,defaultValue:"");
-  map[cookieKey]=cookies;
-  return map;
-}
-
-//set-cookie
-//JSESSIONID=B5287FF2B263655DE4EBBFF323E6BE88; Path=/; Secure; HttpOnly
-void intercepCookie(http.Response response){
-  String key=response.request.url.toString();
-  bool exist=response.headers.containsKey(cookieKey);
-  if(exist){
-    String cookie=response.headers[cookieKey];
-    setAsyncPrefs(key,cookie);
   }
 }

@@ -6,10 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
 import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/util.dart';
+import 'package:flutter_app/util/Util.dart';
 import '../CommonListview.dart';
 
-class HotWordItem extends StatefulWidget with util{
+class HotWordItem extends StatefulWidget with Util{
   final bool inCart;
   final HotWordModel p;
   final ClickItem clickItem;
@@ -68,7 +68,10 @@ class HotWordState extends State<HotWordItem> with WidgetsBindingObserver{
     super.initState();
     //监听该视图事件
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((duration){wrapWidth=key.currentContext.size.width;});
+    WidgetsBinding.instance.addPostFrameCallback((duration){ setState(() {
+      Text text= key.currentWidget as Text;
+      wrapWidth= text.style.fontSize*text.data.length+5*2;
+    });});
   }
 
   @override

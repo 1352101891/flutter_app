@@ -9,15 +9,19 @@
 // ![A scaffold with a bottom navigation bar containing three bottom navigation
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/animation.dart';
 import 'package:flutter_app/main.dart';
+import 'package:flutter_app/page/FavorateListview.dart';
 import 'package:flutter_app/page/HomeTabView.dart';
-import 'package:flutter_app/shopcart.dart';
-import 'package:flutter_app/widget/FreshContainer.dart';
-import 'package:flutter_app/widget/LoadingWidget.dart';
-
-import 'package:flutter_app/util/eventbusutil.dart';
+import 'package:flutter_app/page/LoginView.dart';
+import 'package:flutter_app/util/Constants.dart';
+import 'package:flutter_app/util/PageAnimation.dart';
+import 'package:flutter_app/util/util.dart';
+import 'model/UserInfoModel.dart';
+import 'net/NetRequestUtil.dart';
 
 void main() => runApp(MyApp());
 
@@ -34,81 +38,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class drawerLayout extends StatelessWidget{
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return  Drawer(
-        child:ListView(
-          children:<Widget>[
-            DrawerHeader(
-                margin: EdgeInsets.all(0),
-                padding: EdgeInsets.all(0),
-                child: GestureDetector(
-                  onTap: ()=>showTip(context,"DrawerHeader"),
-                  child:Image(fit:BoxFit.contain,image: new AssetImage('images/timg.jpg')),
-                )
-            )
-          ]..addAll(prods.map((f)=>
-              ListTile(
-                onTap:()=>showTip(context,f.name),
-                title: Text(f.name),
-                subtitle: Text(f.price),
-                leading: new CircleAvatar(
-                  child: Icon(f.icon),
-                ),
-                trailing: new Icon(Icons.add),
-              )).toList())
-        ),
-    );
-  }
-
-  /// 创建一个平移变换
-  /// 跳转过去查看源代码，可以看到有各种各样定义好的变换
-  static FadeTransition createTransition(
-      Animation<double> animation, Widget child) {
-    return new FadeTransition(opacity: new Tween(begin: 0.0,end: 1.0).animate(animation),child: child);
-//    return new SlideTransition(
-//      position: new Tween<Offset>(
-//        begin: const Offset(1.0, 0.0),
-//        end: const Offset(0.0, 0.0),
-//      ).animate(animation),
-//      child: child, // child is the value returned by pageBuilder
-//    );
-  }
-
-  void showTip(BuildContext context,String name){
-    if(name=="哇哈哈" || name=="加多宝"){
-      Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
-        return new mainApp();
-      }));
-    }else{
-      Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
-          (BuildContext context, Animation<double> animation,
-          Animation<double> secondaryAnimation) {
-        return new mainApp();
-      }, transitionsBuilder: (
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child,
-          ) {
-        // 添加一个平移动画
-        return createTransition(animation, child);
-      }));
-    }
-//    showModalBottomSheet(
-//        context: context,
-//        builder: (BuildContext context) {
-//          return new Container(
-//            height: 100.0,
-//            child: new Text("你点击了："+name),
-//          );
-//        }).then((val) {
-//      print(val);
-//    });
-  }
-}
 
 class MyStatefulWidget extends StatefulWidget {
   MyStatefulWidget({Key key}) : super(key: key);
@@ -118,19 +47,47 @@ class MyStatefulWidget extends StatefulWidget {
 }
 class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeepAliveClientMixin {
   int _selectedIndex = 0;
+  UserInfoModel  userInfoModel;
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
   /// 页面控制器（`PageController`）组件，页面视图（`PageView`）的控制器。
   PageController _controller = PageController();
 
-  static void _clearAll() {
-    eventBus.fire(new ClearAllEvent(true));
+
+  @override
+  void initState() {
+    super.initState();
+    gotoLogin();
+  }
+
+  void gotoLogin(){
+    getAsyncPrefs(loginUserKey).then((username) {
+      return getAsyncPrefs(username,defaultValue: null);
+    }).then((userinfoStr) {
+      if(userinfoStr==null){
+        jumpToWidget(context, LoginPage(context), 0).then((value){
+          if(value==null){
+            showToast(context, loginFailed);
+          }else{
+            showToast(context, loginSuccess);
+            setState(() {
+              userInfoModel=value;
+            });
+          }
+        });
+        return;
+      }
+      Map map = json.decode(userinfoStr);
+      setState(() {
+        userInfoModel = UserInfoModel.fromJson(map);
+      });
+    });
   }
 
   static List<Widget> _widgetOptions = <Widget>[
-    HomeTabView(),
+    MainTabView(),
     MyHomePage(),
-    animationHomePage(),
+    AnimationHomePage(),
   ];
 
   static const navigationitem=const <BottomNavigationBarItem>[
@@ -161,18 +118,27 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BottomNavigationBar Sample'),
+        title: Text(tAppName),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            tooltip: tSearch,
+            onPressed: null,
+          ),
+        ],
       ),
-      body: PageView.builder(
-        // 物理（`physics`）属性，页面视图应如何响应用户输入。
-        // 从不可滚动滚动物理（`NeverScrollableScrollPhysics`）类，不允许用户滚动。
-        physics: NeverScrollableScrollPhysics(),
-        itemBuilder: (BuildContext context, int index) {
-          return _widgetOptions.elementAt(index);
-        },
-        itemCount: _widgetOptions.length,
-        // 控制器（`controller`）属性，用于控制滚动此页面视图位置的对象。
-        controller: _controller,
+      body: Builder(
+          builder: (context) => PageView.builder(
+          // 物理（`physics`）属性，页面视图应如何响应用户输入。
+          // 从不可滚动滚动物理（`NeverScrollableScrollPhysics`）类，不允许用户滚动。
+          physics: NeverScrollableScrollPhysics(),
+          itemBuilder: (BuildContext context, int index) {
+            return _widgetOptions.elementAt(index);
+          },
+          itemCount: _widgetOptions.length,
+          // 控制器（`controller`）属性，用于控制滚动此页面视图位置的对象。
+          controller: _controller,
+        )
       ),
       // 底部导航栏（`bottomNavigationBar`）属性，显示在脚手架（`Scaffold`）组件的底部。
       // 底部导航栏（`BottomNavigationBar`）组件，显示在应用程序底部的组件，
@@ -189,7 +155,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
         // 定义底部导航栏（`BottomNavigationBar`）组件的布局和行为。
         type: BottomNavigationBarType.fixed,
       ),
-      drawer:drawerLayout(),
+      drawer:DrawerLayout(context,userInfoModel: userInfoModel),
     );
   }
 
@@ -202,4 +168,103 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
 
   @protected
   bool get wantKeepAlive=>true;
+}
+
+
+class DrawerLayout extends StatefulWidget{
+  UserInfoModel userInfoModel;
+  BuildContext parentContext;
+  DrawerLayout(this.parentContext,{this.userInfoModel});
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return DrawerLayoutState();
+  }
+}
+
+class DrawerLayoutState extends State<DrawerLayout>{
+  DrawerLayoutState();
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return  Drawer(
+      child:ListView(
+          children:<Widget>[
+            DrawerHeader(
+                margin: EdgeInsets.all(0),
+                padding: EdgeInsets.all(0),
+                child: GestureDetector(
+                  onTap: ()=>onpressEvent(widget.parentContext),
+                  child: Stack(
+                      alignment: Alignment.center,
+                      children:<Widget>[
+                        SizedBox(width: double.infinity,height: double.infinity,child: Container(color: Colors.blue,)),
+                        Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children:<Widget>[
+                              Icon(Icons.account_circle,size: 80,color: Colors.white,),
+                              Text(widget.userInfoModel!=null?widget.userInfoModel.username:"请登录")
+                            ]
+                        )
+                      ]
+                  ),
+                )
+            )
+          ]..addAll(drawerList.map((f)=>
+              ListTile(
+                onTap:()=>DrawerItemClickaction(f.name),
+                title: Text(f.name),
+                leading: new CircleAvatar(
+                  child: Icon(f.icon),
+                  backgroundColor: null,
+                ),
+                trailing: Icon(Icons.chevron_right),
+              )).toList())
+      ),
+    );
+  }
+
+  void DrawerItemClickaction(String name){
+    if(drawerList[0].name==name){
+
+    }
+    if(drawerList[1].name==name){
+      jumpToWidget(context,FavorateListview(drawerList[1].name),0).then((value){
+        print("从收藏页面回到主页！");
+      });
+    }
+  }
+
+  void onpressEvent(BuildContext context){
+    if(widget.userInfoModel==null){
+      jumpToWidget(context,LoginPage(context),0).then((value){
+        if(value!=null){
+          showToast(context, loginSuccess);
+          setState(() {
+            widget.userInfoModel=value;
+          });
+        }
+      });
+    }else{
+      logout(callback:(map){
+        if(map[codeKey]==0){
+          removeAsyncPrefs(widget.userInfoModel.username).then((boo){
+            removeAsyncPrefs(loginUserKey);
+          }).then((boo){
+            showToast(context,logoutSuccess);
+            clearModel();
+          });
+        }
+      });
+    }
+  }
+
+  void clearModel(){
+    setState(() {
+      widget.userInfoModel=null;
+    });
+  }
+
 }

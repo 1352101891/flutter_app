@@ -12,7 +12,7 @@ import 'package:flutter_app/widget/LoadingWidget.dart';
 import 'CommonListview.dart';
 
 
-class HomeTabView extends StatefulWidget {
+class MainTabView extends StatefulWidget {
 
   @override
   State createState() {
@@ -20,20 +20,16 @@ class HomeTabView extends StatefulWidget {
   }
 }
 
-class _TabbedAppBar extends State<HomeTabView>  with SingleTickerProviderStateMixin{
+class _TabbedAppBar extends State<MainTabView>  with SingleTickerProviderStateMixin{
   List<BannerModel> banners=[];
   bool isloading=true;
   PageController _pageController;
   TabController _tabController;
 
-  //私有方法不可复写
-  Color _getColor(BuildContext context) {
-    return  Theme.of(context).primaryColor;
-  }
-
 
   @override
   void initState() {
+    super.initState();
 //    要通过json_serializable方式反序列化JSON字符串，我们不需要对先前的代码进行任何更改。
 //    Map userMap = JSON.decode(json);
 //    var user = new User.fromJson(userMap);
@@ -114,6 +110,29 @@ class _TabbedAppBar extends State<HomeTabView>  with SingleTickerProviderStateMi
 }
 
 
+class _HomeTabView extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        primarySwatch: Colors.blue,
+      ),
+      home: MainTabView(),
+    );
+  }
+}
+
 void main() {
-  runApp(new HomeTabView());
+  runApp(new _HomeTabView());
 }

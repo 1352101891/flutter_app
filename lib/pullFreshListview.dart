@@ -5,7 +5,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
 
-void main() => runApp(mainApp());
+void main() => runApp(_mainApp());
 
 
 List<Production> prods=<Production>[
@@ -18,7 +18,7 @@ List<Production> prods=<Production>[
 ];
 
 
-class mainApp extends StatelessWidget {
+class _mainApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {

@@ -5,4 +5,15 @@ class ClearAllEvent{
   ClearAllEvent(this.flag);
 }
 
+class LoginStatus{
+  bool flag;
+  LoginStatus(this.flag);
+}
+
+enum Status{
+  logged,
+  logout,
+}
+
+
 EventBus eventBus = new EventBus();

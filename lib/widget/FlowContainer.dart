@@ -49,7 +49,7 @@ class MyFlowDelegate extends FlowDelegate{
   @override
   bool shouldRepaint(FlowDelegate oldDelegate) {
     // TODO: implement shouldRepaint
-    return null;
+    return false;
   }
 
 }

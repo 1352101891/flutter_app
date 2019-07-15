@@ -17,9 +17,9 @@ import 'dart:convert' as convert;
 
 class RegisterPage extends StatefulWidget {
   String title;
+  BuildContext parentContext;
 
-
-  RegisterPage({this.title="登陆"});
+  RegisterPage(this.parentContext,{this.title="登陆"});
 
   @override
   State<StatefulWidget> createState() => RegisterPagePageState();
@@ -33,6 +33,21 @@ class RegisterPagePageState extends State<RegisterPage> {
   TextEditingController passController = TextEditingController();
   //确认密码控制器
   TextEditingController surepassController = TextEditingController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    phoneController = TextEditingController();
+    passController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    passController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +106,7 @@ class RegisterPagePageState extends State<RegisterPage> {
                     child: RaisedButton(
                       color: Colors.blue,
                       disabledColor: Colors.grey,
-                      onPressed: _login,
+                      onPressed: _register,
                       child: Text('注册'),
                     )
                 ),
@@ -138,20 +153,29 @@ class RegisterPagePageState extends State<RegisterPage> {
     Map map1=json.decode(encode);
     Tag tag1=Tag.fromJson(map1);
   */
-  void _login() {
+  void _register() {
 
     if(inputValidate()){
-      register(phoneController.text,passController.text,passController.text,
+      register(phoneController.text,passController.text,surepassController.text,
         callback: (map){
           int code=map[codeKey];
           if(code!=0){
             showToast(context,map[msgKey]);
             return;
           }
-          UserInfoModel userinfo= UserInfoModel.fromJson(map);
+          UserInfoModel userinfo= UserInfoModel.fromJson(map[dataKey]);
           String userinfoStr= json.encode(userinfo);
-          setAsyncPrefs(userinfo.username, userinfoStr);
-          showToast(context,map[msgKey]);
+          setAsyncPrefs(userinfo.username, userinfoStr).then((boo){
+            if(boo){
+              return setAsyncPrefs(loginUserKey, userinfo.username);
+            }
+          }).then((boo){
+            if(boo){
+              Navigator.pop(context, userinfo);
+            }else{
+              Navigator.pop(context,null);
+            }
+          });
         }
       );
     }
@@ -168,29 +192,20 @@ class RegisterPagePageState extends State<RegisterPage> {
 }
 
 
-class RegisterApp extends StatelessWidget {
+class _RegisterApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: RegisterPage(),
+      home: RegisterPage(context),
     );
   }
 }
 
 
 void main() {
-  runApp(new RegisterApp());
+  runApp(new _RegisterApp());
 }

@@ -3,10 +3,10 @@ import 'package:flutter_app/widget/DragContainer.dart';
 
 import 'main.dart';
 
-void main() => runApp(animationApp());
+void main() => runApp(_animationApp());
 
 
-class animationApp extends StatelessWidget {
+class _animationApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -24,13 +24,13 @@ class animationApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: animationHomePage(title: 'Flutter Demo Home Page'),
+      home: AnimationHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class animationHomePage extends StatefulWidget {
-  animationHomePage({Key key, this.title}) : super(key: key);
+class AnimationHomePage extends StatefulWidget {
+  AnimationHomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -47,7 +47,7 @@ class animationHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<animationHomePage> with AutomaticKeepAliveClientMixin{
+class _MyHomePageState extends State<AnimationHomePage> with AutomaticKeepAliveClientMixin{
 
 
   @override

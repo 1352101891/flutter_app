@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/page/LoginView.dart';
+import 'package:flutter_app/util/PageAnimation.dart';
 import 'package:flutter_app/util/eventbusutil.dart';
 import 'package:flutter_app/shopcart.dart';
 import 'package:event_bus/event_bus.dart';
@@ -9,49 +11,8 @@ import 'package:flutter_app/widget/FlowContainer.dart';
 
 import 'net/NetRequestUtil.dart';
 
-void main() => runApp(mainApp());
+void main() => runApp(_mainApp());
 
-
-class mainApp extends StatelessWidget {
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
 List<Production> prods=<Production>[
   new Production(name:"哇哈哈",price:"2￥",icon:Icons.ac_unit),
   new Production(name:"加多宝",price:"5￥",icon:Icons.accessibility),
@@ -61,21 +22,40 @@ List<Production> prods=<Production>[
   new Production(name:"可口可乐",price:"2.5￥",icon:Icons.add_to_queue),
 ];
 
-class _MyHomePageState extends State<MyHomePage> {
-  void _clearAll() {
 
-    login("lq1111112","lq1111112",callback:(Map<String, dynamic> map)=> print(map.toString()));
-    eventBus.fire(new ClearAllEvent(true));
+class _mainApp extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({this.title}) ;
+
+  final String title;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  void _clearAll(BuildContext context) {
+    jumpToWidget(context,LoginPage(context),1);
+//    login("lq1111112","lq1111112",callback:(Map<String, dynamic> map)=> print(map.toString()));
+//    eventBus.fire(new ClearAllEvent(true));
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    print('build');
     return Scaffold(
       appBar: AppBar(
         leading:IconButton(
@@ -126,10 +106,35 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _clearAll,
+        onPressed:()=> _clearAll(context),
         tooltip: 'Increment',
         child: Icon(Icons.clear_all),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print('initState');
+  }
+
+  @override
+  void reassemble() {
+    // TODO: implement reassemble
+    super.reassemble();
+    print('reassemble');
+  }
+  @override
+  void deactivate() {
+    // TODO: implement deactivate
+    super.deactivate();
+    print('deactivate');
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    print('dispose');
   }
 }

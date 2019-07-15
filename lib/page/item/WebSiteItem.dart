@@ -4,11 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/model/PaperModel.dart';
 import 'package:flutter_app/model/WebsiteModel.dart';
-import 'package:flutter_app/util/util.dart';
+import 'package:flutter_app/util/Util.dart';
 
 import '../CommonListview.dart';
 
-class WebSiteItem extends StatelessWidget with util{
+class WebSiteItem extends StatelessWidget with Util{
   final bool inCart;
   final WebsiteModel p;
   final ClickItem clickItem;

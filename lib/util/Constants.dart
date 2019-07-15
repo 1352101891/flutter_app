@@ -1,11 +1,30 @@
 
 import 'package:flutter/material.dart';
 
+import '../shopcart.dart';
+
+final int notLoginCode=-1001;
+final int successCode=0;
+//主页
+final String tAppName="玩安卓";
+final String tSearch="搜索";
+
+//注册登陆
 final String passwordNullTip="请填写密码！";
 final String wrongSurePasswordTip="两次密码不一致，请重新输入！";
 final String usernameTip="账号长度必须大于6位！";
 final String loginSuccess="登陆成功！";
+final String loginFailed="登陆失败！";
 final String registerSuccess="注册成功！";
+final String logoutSuccess="退出成功！";
+final String notLogged="您还未登陆！";
+
+final List<Production> drawerList=<Production>[
+  new Production(name:"待办事项",price:"5￥",icon:Icons.list),
+  new Production(name:"我的收藏",price:"2￥",icon:Icons.favorite),
+  new Production(name:"浏览历史",price:"5￥",icon:Icons.history),
+  new Production(name:"设置",price:"3￥",icon:Icons.settings),
+];
 
 final Map tabsMap = {
   "首页文章": homeArticles,
@@ -15,9 +34,12 @@ final Map tabsMap = {
 };
 
 final colors=[ Colors.blue, Colors.orange, Colors.red, Colors.green,Colors.greenAccent,Colors.purpleAccent];
+final String loginUserKey="loginUserKey";
 final String msgKey="errorMsg";
+final String dataKey="data";
 final String codeKey="errorCode";
-final String cookieKey="set-cookie";
+final String responseCookieKey="set-cookie";
+final String requestCookieKey="Cookie";
 final String numKey="num";
 final String articleidKey="articleid";
 
@@ -25,7 +47,7 @@ final String articleidKey="articleid";
 final String host="https://www.wanandroid.com/";
 
 ///**********登陆相关
-final String loginUrl="/user/login/?";
+final String loginUrl=host+"/user/login/?";
 final String registerUrl=host+"/user/register/?";
 final String logoutUrl=host+"/user/logout/json";
 

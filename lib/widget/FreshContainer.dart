@@ -53,6 +53,7 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
 
   @override
   void initState() {
+    super.initState();
     setState(() {});
   }
 

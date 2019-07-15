@@ -28,7 +28,7 @@ State getStateByType(BannerModel bannerModel){
 }
 
 void actulGetData(int pn,CommonList t) {
-  String url=t.bannerModel.url.replaceFirst('num',pn.toString());
+  String url=t.bannerModel.url.replaceFirst(numKey,pn.toString());
   get(url,callback:(map){
     if(pn==0){
       t.pageno=0;
@@ -37,20 +37,20 @@ void actulGetData(int pn,CommonList t) {
     if(map!=null && map.length>0) {
       String type=t.bannerModel.title;
       if(type=="首页文章") {
-        PaperPageInfo pageInfo = new PaperPageInfo.fromJson(map["data"]);
+        PaperPageInfo pageInfo = new PaperPageInfo.fromJson(map[dataKey]);
         t.data.addAll(pageInfo.datas);
       }else if(type=="置顶文章"){
         List<PaperModel> list=new List();
-        List temp=map["data"];
+        List temp=map[dataKey];
         temp.forEach((v)=>list.add(new PaperModel.fromJson(v)));
         t.data.addAll(list);
       }else if(type=="常用网站") {
         List<WebsiteModel> list=new List();
-        map["data"].forEach((v)=>list.add(new WebsiteModel.fromJson(v)));
+        map[dataKey].forEach((v)=>list.add(new WebsiteModel.fromJson(v)));
         t.data.addAll(list);
       }else if(type=="搜索热词") {
         List<HotWordModel> list=new List();
-        map["data"].forEach((v)=>list.add(new HotWordModel.fromJson(v)));
+        map[dataKey].forEach((v)=>list.add(new HotWordModel.fromJson(v)));
         t.data.addAll(list);
       }
       t.pageno++;

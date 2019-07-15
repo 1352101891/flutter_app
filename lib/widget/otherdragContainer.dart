@@ -80,6 +80,7 @@ class _DragContainerState extends State<DragContainer>
 
   @override
   void initState() {
+    super.initState();
     animalController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 250));
     maxOffsetDistance = (widget.height + widget.defaultShowHeight) * 0.5;
@@ -96,7 +97,6 @@ class _DragContainerState extends State<DragContainer>
       }
     });
 //    }
-    super.initState();
   }
 
   GestureRecognizerFactoryWithHandlers<MyVerticalDragGestureRecognizer>

@@ -21,6 +21,7 @@ int id;
 String link;
 String niceDate;
 String origin;
+int originId;
 String prefix;
 String projectLink;
 double publishTime;
@@ -36,10 +37,11 @@ int zan;
 
 PaperModel(this.apkLink, this.author, this.chapterId, this.chapterName,
     this.collect, this.courseId, this.desc, this.envelopePic, this.fresh,
-    this.id, this.link, this.niceDate, this.origin, this.prefix,
+    this.id, this.link, this.niceDate, this.origin, this.originId, this.prefix,
     this.projectLink, this.publishTime, this.superChapterId,
     this.superChapterName, this.tags, this.title, this.type, this.userId,
-    this.visible, this.zan); //不同的类使用不同的mixin即可
+    this.visible, this.zan);
+
 factory PaperModel.fromJson(Map<String, dynamic> json) => _$PaperModelFromJson(json);
 Map<String, dynamic> toJson() => _$PaperModelToJson(this);
 }

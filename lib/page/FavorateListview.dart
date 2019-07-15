@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/util/Constants.dart';
+import 'package:flutter_app/util/Util.dart';
 import 'package:flutter_app/util/eventbusutil.dart';
 import 'package:flutter_app/model/BannerModel.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
@@ -13,30 +15,28 @@ import 'package:flutter_app/widget/FlowContainer.dart';
 import 'package:flutter_app/widget/FreshContainer.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
+import 'item/ArticleItem.dart';
+
 typedef void ClickItem(bool isAdd,dynamic p ,String title,String url);
 
-class CommonListview extends StatefulWidget {
-  BannerModel bannerModel;
-
-  CommonListview({this.bannerModel});
+class FavorateListview extends StatefulWidget {
+  String title;
+  FavorateListview(this.title);
 
   @override
   State createState(){
-    return getStateByType(bannerModel);
+    return FavorateList();
   }
 }
 
-class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientMixin {
-  BannerModel bannerModel;
-  Set<T> checkObject=new Set();
+class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKeepAliveClientMixin {
+  Set<PaperModel> checkObject=new Set();
   List<dynamic> data=new List();
   int pageno=0;
   bool isloading=true;
   String message = 'Unknown msg.';
   static const WebviewPage = const MethodChannel('com.flutter.gotowebview');
 
-
-  CommonList(this.bannerModel);
 
   Future<void> getWebviewResult(Map<dynamic, dynamic> map) async {
     String msg;
@@ -54,9 +54,9 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
   @override
   void initState() {
     super.initState();
-    print(bannerModel.title+"getDataSync:之前");
+    print("getDataSync:之前");
     getDataAsync(pageno);
-    print(bannerModel.title+"getDataSync:之后");
+    print("getDataSync:之后");
     eventBus.on<ClearAllEvent>().listen((event) {
       print("ClearAllEvent:"+(event.flag?"true":"false"));
       if(event.flag){
@@ -66,16 +66,29 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
   }
 
   void getDataAsync(int pn){
-    actulGetData(pn,this);
+    String url=collectedArticles.replaceFirst(numKey,pn.toString());
+    request(url, callback: (map) {
+      if(pn==0){
+        pageno=0;
+        data.clear();
+      }
+      int code = map[codeKey];
+      if (code != 0) {
+        showToast(context, map[msgKey]);
+        return;
+      }
+      PaperPageInfo pageInfo = new PaperPageInfo.fromJson(map[dataKey]);
+      data.addAll(pageInfo.datas);
+      pageno++;
+      setLoadingStatus(false);
+    });
   }
 
 
   void setLoadingStatus(bool flag){
-    if(mounted){
-      setState(() {
-        isloading=flag;
-      });
-    }
+    setState(() {
+      isloading=flag;
+    });
   }
 
   @protected
@@ -87,13 +100,13 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
     });
   }
 
-  void _add(T p) {
+  void _add(PaperModel p) {
     setState(() {
        checkObject.add(p);
     });
   }
 
-  void _remove(T p){
+  void _remove(PaperModel p){
     setState(() {
       checkObject.remove(p);
     });
@@ -117,33 +130,31 @@ class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientM
     super.build(context);
     if(isloading){
       return new Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
             body: Center(
               child:LoadingWidget(status: STATUS.LOADING),
             )
         );
     }else {
       return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
           body: Center(
               child: Align(
                 alignment: Alignment.center,
-                child: bannerModel.title=="搜索热词"?
-                  FlowContainer(
-                    delegate: MyFlowDelegate(),
-                    children: data.map((p) =>
-                        getItemWidgetByType(checkObject.contains(p), p, _clickItem)
-                    ).toList(),
-                  ):
-                  FreshContainer(
+                child: FreshContainer(
                     child:ListView(
                       //不管什么平台这样设置,对于overscroll都可以监听到
                       physics: const ClampingScrollPhysics(),
                       children: data.map((p) =>
-                          getItemWidgetByType(checkObject.contains(p), p, _clickItem)
-                      ).toList(),
+                          ArticleItem(checkObject.contains(p), p, _clickItem,isCollectList: true,)).toList(),
                     ),
                     refresh: () => getDataAsync(0),
                     loadMore: () => getDataAsync(pageno),
-                    needLoadmore: needLoadmoreByType(bannerModel.title),
+                    needLoadmore:true,
                   ),
               )
           )
