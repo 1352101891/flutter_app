@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/widget/DragContainer.dart';
-
 import 'main.dart';
 
 void main() => runApp(_animationApp());

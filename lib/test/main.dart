@@ -1,15 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/page/LoginView.dart';
-import 'package:flutter_app/util/PageAnimation.dart';
+import 'package:flutter_app/page/userpage/LoginView.dart';
+import 'package:flutter_app/test/shopcart.dart';
+import 'package:flutter_app/util/PageRouter.dart';
 import 'package:flutter_app/util/eventbusutil.dart';
-import 'package:flutter_app/shopcart.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/widget/FlowContainer.dart';
-
-import 'net/NetRequestUtil.dart';
 
 void main() => runApp(_mainApp());
 
@@ -48,7 +46,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   void _clearAll(BuildContext context) {
-    jumpToWidget(context,LoginPage(context),1);
+    jumpToWidgetDirect(context,LoginPage(context),1);
 //    login("lq1111112","lq1111112",callback:(Map<String, dynamic> map)=> print(map.toString()));
 //    eventBus.fire(new ClearAllEvent(true));
   }

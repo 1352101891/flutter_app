@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
 import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/util/Util.dart';
-import '../CommonListview.dart';
+import 'package:flutter_app/page/main/CommonListview.dart';
 
 class HotWordItem extends StatefulWidget with Util{
   final bool inCart;

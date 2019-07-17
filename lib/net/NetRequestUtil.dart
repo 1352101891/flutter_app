@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter_app/test/shopcart.dart';
 import 'package:flutter_app/util/util.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import '../shopcart.dart';
 import 'package:flutter_app/util/Constants.dart';
 
 typedef Callback(Map<String, dynamic> responseData);
@@ -75,7 +75,7 @@ void get(String url,{Callback callback}) {
   });
 }
 
-//0是get，1是post
+///0是get，1是post
 void request(String url,{int type=0,bool addCookies=true,Object param,Callback callback}) {
   if(addCookies) {
     Future<Map<dynamic, dynamic>> future = addCookie(loginUrl);
@@ -83,7 +83,7 @@ void request(String url,{int type=0,bool addCookies=true,Object param,Callback c
       if(type==0){
         return http.get(url, headers: map);
       }else{
-        return http.post(url, headers: map, body: json.encode(param), encoding: Utf8Codec());
+        return http.post(url, headers: map, body: param, encoding: Utf8Codec());
       }}
     ).then((http.Response response) {
       final Map<String, dynamic> responseData = json.decode(response.body);

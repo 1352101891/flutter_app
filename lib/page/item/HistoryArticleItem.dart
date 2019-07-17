@@ -5,46 +5,41 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/model/PaperModel.dart';
 import 'package:flutter_app/net/NetRequestUtil.dart';
 import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/PageRouter.dart';
 import 'package:flutter_app/util/Util.dart';
 
 import 'package:flutter_app/page/main/CommonListview.dart';
 
-class ArticleItem extends StatefulWidget with Util{
+typedef void Callback(PaperModel p);
+
+class HistoryArticleItem extends StatefulWidget with Util{
   final bool inCart;
   final PaperModel p;
   final ClickItem clickItem;
+  final Callback cb;
 
-  ArticleItem(this.inCart, dynamic prod,this.clickItem):p = prod,
+
+  HistoryArticleItem(this.inCart, dynamic prod,this.clickItem,this.cb):p = prod,
         super(key: new ObjectKey(prod));
 
   @override
   State<StatefulWidget> createState() {
-    return Article(inCart,p,clickItem);
+    return HistoryArticle(inCart,p,clickItem);
   }
 }
 
-class Article extends State<ArticleItem> with WidgetsBindingObserver,Util{
+class HistoryArticle extends State<HistoryArticleItem> with WidgetsBindingObserver,Util{
   final bool inCart;
   final PaperModel p;
   final ClickItem clickItem;
   GlobalKey key;
-  double mWidth=200;
 
-  Article(this.inCart,this.p,this.clickItem){
-    if(p.collect==null){
-      p.collect=false;
-    }
+  HistoryArticle(this.inCart,this.p,this.clickItem){
     key = new GlobalKey(debugLabel:p.title);
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((duration){ setState(() {
-      mWidth= key.currentContext.size.width;
-      print("mWidth:"+mWidth.toString());
-    });});
   }
 
   @override
@@ -52,26 +47,15 @@ class Article extends State<ArticleItem> with WidgetsBindingObserver,Util{
     final size = MediaQuery.of(context).size;
     print("size:width:"+size.toString());
     return ListTile(
-//      leading: new CircleAvatar(
-//        backgroundColor: _getColor(context,inCart),
-//        child: Icon(Icons.insert_emoticon),
-//      ),
-      title: GestureDetector(
         onTap: () {
           clickItem(!inCart,p,p.title,p.link);
         },
-        child:Column(
+        title:Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children:<Widget>[
-              Row(
-                key: key,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children:<Widget>[
-                  SizedBox(
-                    width:size.width*0.8-25,
-                    child:Text(p.title,style: inCart?Theme.of(context).textTheme.subhead:Theme.of(context).textTheme.body1),
-                  )
-                ],
+              Padding(
+                padding: EdgeInsets.fromLTRB(0,10,0,5),
+                child: Text(p.title,style: inCart?Theme.of(context).textTheme.subhead:Theme.of(context).textTheme.body1)
               ),
               Row(
                   mainAxisAlignment:MainAxisAlignment.end ,
@@ -88,31 +72,7 @@ class Article extends State<ArticleItem> with WidgetsBindingObserver,Util{
               )
             ]
           ),
-        ),
-        trailing:GestureDetector(
-          onTap:()=>_favorate(),
-          child:Icon((p.collect==null||!p.collect)?Icons.favorite_border:Icons.favorite,size:25)
-        )
-    );
-  }
-
-  void _favorate(){
-    String url="";
-    if(p.collect){
-      url=uncollectOriginIdArticle;
-    }else{
-      url=collectArticle;
-    }
-    url=url.replaceFirst(articleidKey, p.id.toString());
-    request(url,type:1,callback:(map){
-      if(map[codeKey]==successCode){
-        setState(() {
-          p.collect=!p.collect;
-        });
-      }else{
-        showToast(context, map[msgKey]);
-      }
-    });
+        );
   }
 
 }

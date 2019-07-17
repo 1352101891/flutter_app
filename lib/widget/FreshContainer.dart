@@ -124,7 +124,7 @@ class _dragStateFul extends State<FreshContainer> with TickerProviderStateMixin{
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(5),
-                    gradient: LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors: [Colors.black12, Colors.white]),
+                    gradient: LinearGradient(begin:Alignment.topCenter,end:Alignment.bottomCenter,colors: [Colors.grey, Colors.grey]),
                   ),
                 )
               )

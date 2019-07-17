@@ -12,10 +12,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_app/model/UserInfoModel.dart';
 import 'package:flutter_app/net/NetRequestUtil.dart';
 import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/PageAnimation.dart';
+import 'package:flutter_app/util/PageRouter.dart';
+import 'package:flutter_app/util/UserManager.dart';
 import 'package:flutter_app/util/util.dart';
 
-import 'RegisterView.dart';
+import 'package:flutter_app/page/userpage/RegisterView.dart';
 
 class LoginPage extends StatefulWidget {
   String title;
@@ -139,7 +140,7 @@ class LoginPageState extends State<LoginPage> {
   }
 
   void _gotoRegister(BuildContext context) {
-    jumpToWidget(context, RegisterPage(context), 0).then((value) {
+    jumpToWidgetDirect(context, RegisterPage(context), 0).then((value) {
       if (value == null) {
         return;
       }
@@ -164,23 +165,26 @@ class LoginPageState extends State<LoginPage> {
 
   void _login() {
     if (inputValidate()) {
-      login(phoneController.text, passController.text, callback: (map) {
-        int code = map[codeKey];
-        if (code != 0) {
-          showToast(context, map[msgKey]);
-          return;
-        }
-        UserInfoModel userinfo = UserInfoModel.fromJson(map[dataKey]);
-        String userinfoStr = json.encode(userinfo);
-        //保存登陆账号信息
-        setAsyncPrefs(userinfo.username, userinfoStr).then((boo) {
-          if (boo) {
-            return setAsyncPrefs(loginUserKey, userinfo.username);
+      removeAsyncPrefs(loginUrl).then((boo){
+        login(phoneController.text, passController.text, callback: (map) {
+          int code = map[codeKey];
+          if (code != 0) {
+            showToast(context, map[msgKey]);
+            return;
           }
-        }).then((boo) {
-          if (boo) {
-            Navigator.of(context).pop(userinfoStr);
-          }
+          UserInfoModel userinfo = UserInfoModel.fromJson(map[dataKey]);
+          gobalUserInfo=userinfo;
+          String userinfoStr = json.encode(userinfo);
+          //保存登陆账号信息
+          setAsyncPrefs(userinfo.username, userinfoStr).then((boo) {
+            if (boo) {
+              return setAsyncPrefs(loginUserKey, userinfo.username);
+            }
+          }).then((boo) {
+            if (boo) {
+              Navigator.of(widget.parentContext).pop(userinfo);
+            }
+          });
         });
       });
     }

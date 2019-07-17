@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/Util.dart';
+import 'package:flutter_app/db/DBOperationArticle.dart';
 import 'package:flutter_app/util/eventbusutil.dart';
 import 'package:flutter_app/model/BannerModel.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
@@ -15,28 +14,30 @@ import 'package:flutter_app/widget/FlowContainer.dart';
 import 'package:flutter_app/widget/FreshContainer.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
-import 'item/ArticleItem.dart';
+typedef void ClickItem(bool isAdd,dynamic p ,String title,String url,{bool jump});
 
-typedef void ClickItem(bool isAdd,dynamic p ,String title,String url);
+class CommonListview extends StatefulWidget {
+  BannerModel bannerModel;
 
-class FavorateListview extends StatefulWidget {
-  String title;
-  FavorateListview(this.title);
+  CommonListview({this.bannerModel});
 
   @override
   State createState(){
-    return FavorateList();
+    return getStateByType(bannerModel);
   }
 }
 
-class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKeepAliveClientMixin {
-  Set<PaperModel> checkObject=new Set();
+class CommonList<T> extends State<CommonListview> with AutomaticKeepAliveClientMixin {
+  BannerModel bannerModel;
+  Set<T> checkObject=new Set();
   List<dynamic> data=new List();
   int pageno=0;
   bool isloading=true;
   String message = 'Unknown msg.';
   static const WebviewPage = const MethodChannel('com.flutter.gotowebview');
 
+
+  CommonList(this.bannerModel);
 
   Future<void> getWebviewResult(Map<dynamic, dynamic> map) async {
     String msg;
@@ -54,9 +55,9 @@ class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKee
   @override
   void initState() {
     super.initState();
-    print("getDataSync:之前");
+    print(bannerModel.title+"getDataSync:之前");
     getDataAsync(pageno);
-    print("getDataSync:之后");
+    print(bannerModel.title+"getDataSync:之后");
     eventBus.on<ClearAllEvent>().listen((event) {
       print("ClearAllEvent:"+(event.flag?"true":"false"));
       if(event.flag){
@@ -66,22 +67,7 @@ class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKee
   }
 
   void getDataAsync(int pn){
-    String url=collectedArticles.replaceFirst(numKey,pn.toString());
-    request(url, callback: (map) {
-      if(pn==0){
-        pageno=0;
-        data.clear();
-      }
-      int code = map[codeKey];
-      if (code != 0) {
-        showToast(context, map[msgKey]);
-        return;
-      }
-      PaperPageInfo pageInfo = new PaperPageInfo.fromJson(map[dataKey]);
-      data.addAll(pageInfo.datas);
-      pageno++;
-      setLoadingStatus(false);
-    });
+    actulGetData(pn,this);
   }
 
 
@@ -100,28 +86,38 @@ class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKee
     });
   }
 
-  void _add(PaperModel p) {
+  void _add(T p) {
     setState(() {
        checkObject.add(p);
     });
   }
 
-  void _remove(PaperModel p){
+  void _remove(T p){
     setState(() {
       checkObject.remove(p);
     });
   }
 
-  void _clickItem(bool inCart,dynamic p,String title,String url){
+  void _clickItem(bool inCart,dynamic p,String title,String url,{bool jump=true}){
     Map map={
       "title":title,
       "url":url,
     };
-    getWebviewResult(Map<dynamic, dynamic>.from(map));
+    if(jump)
+      getWebviewResult(Map<dynamic, dynamic>.from(map));
     if(inCart) {
       _add(p);
     }else{
       _remove(p);
+    }
+    if(p is PaperModel){
+      DBOperationArticle.queryNumByCon(p).then((num){
+        if(num==0){
+          DBOperationArticle.addNotMuti(p).then((num){
+            print("插入行数："+num.toString());
+          });
+        }
+      });
     }
   }
 
@@ -130,31 +126,33 @@ class FavorateList<PaperModel> extends State<FavorateListview> with AutomaticKee
     super.build(context);
     if(isloading){
       return new Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
-          ),
             body: Center(
               child:LoadingWidget(status: STATUS.LOADING),
             )
         );
     }else {
       return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
-          ),
           body: Center(
               child: Align(
                 alignment: Alignment.center,
-                child: FreshContainer(
+                child: bannerModel.title=="搜索热词"?
+                  FlowContainer(
+                    delegate: MyFlowDelegate(),
+                    children: data.map((p) =>
+                        getItemWidgetByType(checkObject.contains(p), p, _clickItem)
+                    ).toList(),
+                  ):
+                  FreshContainer(
                     child:ListView(
                       //不管什么平台这样设置,对于overscroll都可以监听到
                       physics: const ClampingScrollPhysics(),
                       children: data.map((p) =>
-                          ArticleItem(checkObject.contains(p), p, _clickItem,isCollectList: true,)).toList(),
+                          getItemWidgetByType(checkObject.contains(p), p, _clickItem)
+                      ).toList(),
                     ),
                     refresh: () => getDataAsync(0),
                     loadMore: () => getDataAsync(pageno),
-                    needLoadmore:true,
+                    needLoadmore: needLoadmoreByType(bannerModel.title),
                   ),
               )
           )

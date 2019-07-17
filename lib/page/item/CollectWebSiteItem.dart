@@ -10,39 +10,27 @@ import 'package:flutter_app/util/UserManager.dart';
 import 'package:flutter_app/util/Util.dart';
 
 import 'package:flutter_app/page/main/CommonListview.dart';
-class WebSiteItem  extends StatefulWidget{
+typedef void Callback(WebsiteModel p);
+class FavorateWebSiteItem extends StatelessWidget with Util{
   final bool inCart;
   final WebsiteModel p;
   final ClickItem clickItem;
+  final Callback cb;
 
-  WebSiteItem(this.inCart,this.p,this.clickItem);
+  FavorateWebSiteItem(this.inCart, dynamic prod,this.clickItem,this.cb):p = prod,
+        super(key: new ObjectKey(prod));
 
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    return WebSiteState(inCart,p,clickItem);
-  }
-}
-
-class WebSiteState extends State<WebSiteItem> with Util{
-  bool inCart;
-  final WebsiteModel p;
-  final ClickItem clickItem;
-
-  WebSiteState(this.inCart, this.p,this.clickItem);
-
-  void favorateWeb(BuildContext context){
+  void remove(BuildContext context){
     if(gobalUserInfo == null){
       return;
     }
     Map map={
-      'name':p.name,
-      'link':p.link,
+      'id':p.id.toString(),
     };
-    request(collectWebSite,type: 1,param:map,callback:(map){
+    request(deleteWebSite,type: 1,param:map,callback:(map){
       if(map[codeKey]==successCode){
-        clickItem(!inCart,p,p.name,p.link,jump:false);
-        showToast(context,"收藏成功！");
+        showToast(context,"删除成功！");
+        cb(p);
       }
     });
   }
@@ -50,15 +38,13 @@ class WebSiteState extends State<WebSiteItem> with Util{
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onLongPress:()=>favorateWeb(context),
-      onTap: () {
-        clickItem(!inCart,p,p.name,p.link);
-      },
       leading: new CircleAvatar(
         backgroundColor: getColor(context,inCart),
         child: Icon(Icons.link),
       ),
-      title: Column(
+      title: GestureDetector(
+        onTap: () { clickItem(!inCart,p,p.name,p.link);},
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children:<Widget>[
             new Padding(
@@ -76,6 +62,11 @@ class WebSiteState extends State<WebSiteItem> with Util{
                 ,padding:EdgeInsets.fromLTRB(0,1,0,0)
             )
           ]
+        )
+      ),
+      trailing: GestureDetector(
+        onTap: ()=>remove(context),
+        child: Icon(Icons.remove_circle_outline),
       ),
     );
   }

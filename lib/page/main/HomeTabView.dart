@@ -9,7 +9,7 @@ import 'package:flutter_app/util/ItemFactory.dart';
 import 'package:flutter_app/widget/FixTabBarView.dart';
 import 'package:flutter_app/widget/LoadingWidget.dart';
 
-import 'CommonListview.dart';
+import 'package:flutter_app/page/main/CommonListview.dart';
 
 
 class MainTabView extends StatefulWidget {

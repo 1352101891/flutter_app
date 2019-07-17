@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
-
-import '../shopcart.dart';
+import 'package:flutter_app/test/shopcart.dart';
 
 final int notLoginCode=-1001;
 final int successCode=0;
@@ -21,7 +20,8 @@ final String notLogged="您还未登陆！";
 
 final List<Production> drawerList=<Production>[
   new Production(name:"待办事项",price:"5￥",icon:Icons.list),
-  new Production(name:"我的收藏",price:"2￥",icon:Icons.favorite),
+  new Production(name:"我的文章",price:"2￥",icon:Icons.book),
+  new Production(name:"我的网址",price:"2￥",icon:Icons.link),
   new Production(name:"浏览历史",price:"5￥",icon:Icons.history),
   new Production(name:"设置",price:"3￥",icon:Icons.settings),
 ];
@@ -42,6 +42,7 @@ final String responseCookieKey="set-cookie";
 final String requestCookieKey="Cookie";
 final String numKey="num";
 final String articleidKey="articleid";
+final String linkMark="&nbsp;";
 
 ///*************接口
 final String host="https://www.wanandroid.com/";

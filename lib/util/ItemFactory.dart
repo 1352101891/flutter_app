@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_app/db/DBOperationHotWord.dart';
 import 'package:flutter_app/model/BannerModel.dart';
 import 'package:flutter_app/model/HotWordModel.dart';
 import 'package:flutter_app/model/PaperModel.dart';
@@ -6,12 +7,14 @@ import 'package:flutter_app/model/PaperPageInfo.dart';
 import 'package:flutter_app/model/WebsiteModel.dart';
 import 'package:flutter_app/util/Constants.dart';
 import 'package:flutter_app/net/NetRequestUtil.dart';
-import 'package:flutter_app/page/CommonListview.dart';
+import 'package:flutter_app/page/main/CommonListview.dart';
 import 'package:flutter_app/page/item/ArticleItem.dart';
 import 'package:flutter_app/page/item/HotWordItem.dart';
 import 'package:flutter_app/page/item/WebSiteItem.dart';
 import 'package:flutter_app/util/util.dart';
 import 'package:flutter_app/widget/FlowContainer.dart';
+
+import 'UserManager.dart';
 
 
 State getStateByType(BannerModel bannerModel){
@@ -29,31 +32,33 @@ State getStateByType(BannerModel bannerModel){
 
 void actulGetData(int pn,CommonList t) {
   String url=t.bannerModel.url.replaceFirst(numKey,pn.toString());
-  get(url,callback:(map){
+  request(url,callback:(map){
     if(pn==0){
       t.pageno=0;
       t.data.clear();
     }
+    List<dynamic> list=new List();
     if(map!=null && map.length>0) {
       String type=t.bannerModel.title;
       if(type=="首页文章") {
         PaperPageInfo pageInfo = new PaperPageInfo.fromJson(map[dataKey]);
-        t.data.addAll(pageInfo.datas);
+        list=pageInfo.datas;
+        t.data.addAll(list);
       }else if(type=="置顶文章"){
-        List<PaperModel> list=new List();
         List temp=map[dataKey];
         temp.forEach((v)=>list.add(new PaperModel.fromJson(v)));
         t.data.addAll(list);
       }else if(type=="常用网站") {
-        List<WebsiteModel> list=new List();
         map[dataKey].forEach((v)=>list.add(new WebsiteModel.fromJson(v)));
         t.data.addAll(list);
       }else if(type=="搜索热词") {
-        List<HotWordModel> list=new List();
         map[dataKey].forEach((v)=>list.add(new HotWordModel.fromJson(v)));
+        DBOperationHotWord.batch(list).then((_)=> print("插入关键字成功！"));
         t.data.addAll(list);
       }
-      t.pageno++;
+      if(isValidList(list)){
+        t.pageno++;
+      }
       t.setLoadingStatus(false);
     }
   });

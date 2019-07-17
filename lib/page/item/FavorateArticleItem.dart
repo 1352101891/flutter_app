@@ -5,17 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/model/PaperModel.dart';
 import 'package:flutter_app/net/NetRequestUtil.dart';
 import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/PageRouter.dart';
 import 'package:flutter_app/util/Util.dart';
-
 import 'package:flutter_app/page/main/CommonListview.dart';
 
-class ArticleItem extends StatefulWidget with Util{
+typedef void Callback(PaperModel p);
+
+class FavorateArticleItem extends StatefulWidget with Util{
   final bool inCart;
   final PaperModel p;
   final ClickItem clickItem;
+  final Callback cb;
 
-  ArticleItem(this.inCart, dynamic prod,this.clickItem):p = prod,
+
+  FavorateArticleItem(this.inCart, dynamic prod,this.clickItem,this.cb):p = prod,
         super(key: new ObjectKey(prod));
 
   @override
@@ -24,7 +26,7 @@ class ArticleItem extends StatefulWidget with Util{
   }
 }
 
-class Article extends State<ArticleItem> with WidgetsBindingObserver,Util{
+class Article extends State<FavorateArticleItem> with WidgetsBindingObserver,Util{
   final bool inCart;
   final PaperModel p;
   final ClickItem clickItem;
@@ -91,24 +93,20 @@ class Article extends State<ArticleItem> with WidgetsBindingObserver,Util{
         ),
         trailing:GestureDetector(
           onTap:()=>_favorate(),
-          child:Icon((p.collect==null||!p.collect)?Icons.favorite_border:Icons.favorite,size:25)
+          child:Icon(Icons.favorite,size:25)
         )
     );
   }
 
   void _favorate(){
     String url="";
-    if(p.collect){
-      url=uncollectOriginIdArticle;
-    }else{
-      url=collectArticle;
-    }
-    url=url.replaceFirst(articleidKey, p.id.toString());
+    url=uncollectOriginIdArticle.replaceFirst(articleidKey, p.originId.toString());
     request(url,type:1,callback:(map){
       if(map[codeKey]==successCode){
         setState(() {
           p.collect=!p.collect;
         });
+        widget.cb(p);
       }else{
         showToast(context, map[msgKey]);
       }

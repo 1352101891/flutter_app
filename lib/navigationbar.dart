@@ -12,14 +12,21 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/animation.dart';
-import 'package:flutter_app/main.dart';
-import 'package:flutter_app/page/FavorateListview.dart';
-import 'package:flutter_app/page/HomeTabView.dart';
-import 'package:flutter_app/page/LoginView.dart';
+import 'package:flutter_app/page/collectpage/CollectWebsListview.dart';
+import 'package:flutter_app/page/collectpage/FavorateListview.dart';
+import 'package:flutter_app/page/collectpage/HistoryListview.dart';
+import 'package:flutter_app/page/main/HomeTabView.dart';
+import 'package:flutter_app/page/main/SearchListview.dart';
+import 'package:flutter_app/page/userpage/LoginView.dart';
+import 'package:flutter_app/test/animation.dart';
+import 'package:flutter_app/test/main.dart';
 import 'package:flutter_app/util/Constants.dart';
-import 'package:flutter_app/util/PageAnimation.dart';
+import 'package:flutter_app/util/PageRouter.dart';
+import 'package:flutter_app/util/UserManager.dart';
 import 'package:flutter_app/util/util.dart';
+import 'db/DBOperationArticle.dart';
+import 'db/DBHelper.dart';
+import 'db/DBOperationHotWord.dart';
 import 'model/UserInfoModel.dart';
 import 'net/NetRequestUtil.dart';
 
@@ -38,6 +45,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+typedef void LogoutCallback();
 
 class MyStatefulWidget extends StatefulWidget {
   MyStatefulWidget({Key key}) : super(key: key);
@@ -57,7 +65,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
   @override
   void initState() {
     super.initState();
+    create(DBOperationArticle.createPaperTableSql);
+    create(DBOperationHotWord.createHotWordTableSql);
     gotoLogin();
+  }
+
+  void clearUserInfo(){
+    setState(() {
+      userInfoModel=null;
+    });
   }
 
   void gotoLogin(){
@@ -65,23 +81,27 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
       return getAsyncPrefs(username,defaultValue: null);
     }).then((userinfoStr) {
       if(userinfoStr==null){
-        jumpToWidget(context, LoginPage(context), 0).then((value){
+        jumpToWidgetDirect(context, LoginPage(context), 0).then((value){
           if(value==null){
             showToast(context, loginFailed);
           }else{
             showToast(context, loginSuccess);
-            setState(() {
-              userInfoModel=value;
-            });
+            setUserinfo(value);
           }
         });
         return;
       }
       Map map = json.decode(userinfoStr);
-      setState(() {
-        userInfoModel = UserInfoModel.fromJson(map);
-      });
+      UserInfoModel temp=UserInfoModel.fromJson(map);
+      setUserinfo(temp);
     });
+  }
+
+  void setUserinfo(UserInfoModel temp){
+    setState(() {
+      userInfoModel = temp;
+    });
+    gobalUserInfo=userInfoModel;
   }
 
   static List<Widget> _widgetOptions = <Widget>[
@@ -113,6 +133,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
     });
   }
 
+  void goToSearch(){
+    jumpToWidgetDirect(context, SearchListview("搜索"), 0);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -123,7 +147,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
           IconButton(
             icon: Icon(Icons.search),
             tooltip: tSearch,
-            onPressed: null,
+            onPressed: goToSearch,
           ),
         ],
       ),
@@ -155,7 +179,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
         // 定义底部导航栏（`BottomNavigationBar`）组件的布局和行为。
         type: BottomNavigationBarType.fixed,
       ),
-      drawer:DrawerLayout(context,userInfoModel: userInfoModel),
+      drawer:DrawerLayout(context,clearUserInfo,userInfoModel: userInfoModel),
     );
   }
 
@@ -172,19 +196,34 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>  with AutomaticKeep
 
 
 class DrawerLayout extends StatefulWidget{
-  UserInfoModel userInfoModel;
-  BuildContext parentContext;
-  DrawerLayout(this.parentContext,{this.userInfoModel});
+  final UserInfoModel userInfoModel;
+  final BuildContext parentContext;
+  final LogoutCallback cb;
+  DrawerLayout(this.parentContext,this.cb,{this.userInfoModel});
 
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return DrawerLayoutState();
+    return DrawerLayoutState(userInfoModel);
   }
 }
 
-class DrawerLayoutState extends State<DrawerLayout>{
-  DrawerLayoutState();
+class DrawerLayoutState extends State<DrawerLayout>  with AutomaticKeepAliveClientMixin {
+
+  UserInfoModel userInfoModel;
+  DrawerLayoutState(this.userInfoModel){
+   print("create()");
+  }
+
+
+  @override
+  void initState() {
+    print("initState()");
+    super.initState();
+  }
+
+  @protected
+  bool get wantKeepAlive=>true;
 
   @override
   Widget build(BuildContext context) {
@@ -205,7 +244,7 @@ class DrawerLayoutState extends State<DrawerLayout>{
                             mainAxisAlignment: MainAxisAlignment.center,
                             children:<Widget>[
                               Icon(Icons.account_circle,size: 80,color: Colors.white,),
-                              Text(widget.userInfoModel!=null?widget.userInfoModel.username:"请登录")
+                              Text(userInfoModel!=null?userInfoModel.username:"请登录")
                             ]
                         )
                       ]
@@ -214,7 +253,7 @@ class DrawerLayoutState extends State<DrawerLayout>{
             )
           ]..addAll(drawerList.map((f)=>
               ListTile(
-                onTap:()=>DrawerItemClickaction(f.name),
+                onTap:()=>drawerItemClickAction(f.name),
                 title: Text(f.name),
                 leading: new CircleAvatar(
                   child: Icon(f.icon),
@@ -226,45 +265,67 @@ class DrawerLayoutState extends State<DrawerLayout>{
     );
   }
 
-  void DrawerItemClickaction(String name){
-    if(drawerList[0].name==name){
+  void drawerItemClickAction(String name){
 
-    }
-    if(drawerList[1].name==name){
-      jumpToWidget(context,FavorateListview(drawerList[1].name),0).then((value){
+    if("我的文章"==name){
+      jumpToWidgetDirect(context,FavorateListview(drawerList[1].name),0).then((value){
+        print("从收藏页面回到主页！");
+      });
+    }else if("浏览历史"==name){
+      jumpToWidgetDirect(context,HistoryListview(drawerList[2].name),0).then((value){
+        print("从收藏页面回到主页！");
+      });
+    }else if("我的网址"==name){
+      jumpToWidgetDirect(context,CollectWebsListview(drawerList[2].name),0).then((value){
         print("从收藏页面回到主页！");
       });
     }
   }
 
+  @override
+  void deactivate() {
+    // TODO: implement deactivate
+    super.deactivate();
+    print('deactivate');
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    print('dispose');
+  }
+
+  void setUserInfo(UserInfoModel um){
+    gobalUserInfo=um;
+    setState(() {
+      userInfoModel=um;
+    });
+  }
+
   void onpressEvent(BuildContext context){
-    if(widget.userInfoModel==null){
-      jumpToWidget(context,LoginPage(context),0).then((value){
+    if(userInfoModel==null){
+      jumpToWidgetDirect(context,LoginPage(context),0).then((value){
         if(value!=null){
           showToast(context, loginSuccess);
-          setState(() {
-            widget.userInfoModel=value;
-          });
+          setUserInfo(value);
         }
       });
     }else{
       logout(callback:(map){
         if(map[codeKey]==0){
-          removeAsyncPrefs(widget.userInfoModel.username).then((boo){
-            removeAsyncPrefs(loginUserKey);
+          removeAsyncPrefs(userInfoModel.username).then((boo){
+            return removeAsyncPrefs(loginUserKey);
           }).then((boo){
-            showToast(context,logoutSuccess);
-            clearModel();
+            return removeAsyncPrefs(loginUrl);
+          }).then((boo){
+            gobalUserInfo=null;
+            setUserInfo(null);
+            widget.cb();
           });
         }
       });
     }
-  }
-
-  void clearModel(){
-    setState(() {
-      widget.userInfoModel=null;
-    });
   }
 
 }

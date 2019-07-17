@@ -1,16 +1,43 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/page/userpage/LoginView.dart';
+
+import 'Constants.dart';
+import 'Util.dart';
+
+typedef Callback(bool success);
+
+void gotoLogin(BuildContext context,Callback cb){
+  getAsyncPrefs(loginUserKey).then((username) {
+    return getAsyncPrefs(username,defaultValue: null);
+  }).then((userinfoStr) {
+    if(userinfoStr==null){
+      jumpToWidgetDirect(context, LoginPage(context), 0).then((value){
+        if(value==null){
+          cb(false);
+          showToast(context, loginFailed);
+        }else{
+          cb(true);
+          showToast(context, loginSuccess);
+        }
+      });
+      return;
+    }
+    cb(true);
+  });
+}
 
 
 /// animationType 0无动画，1平移动画，2透明动画
-void jumpToWidget(BuildContext context,Widget widget,int animationType){
+Future<dynamic> jumpToWidgetDirect(BuildContext context,Widget widget,int animationType) async{
+
   if(animationType==0){
-    Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
+    return await Navigator.of(context).push(new MaterialPageRoute(builder: (_) {
       return widget;
     }));
   }else if(animationType==1){
-    Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
+    return await Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
         (BuildContext context, Animation<double> animation,
         Animation<double> secondaryAnimation) {
       return widget;
@@ -23,8 +50,8 @@ void jumpToWidget(BuildContext context,Widget widget,int animationType){
       // 添加一个透明动画
       return createFadeTransition(animation, child);
     }));
-  }else if(animationType==2) {
-    Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
+  }else{
+    return await Navigator.of(context).push(new PageRouteBuilder(pageBuilder:
         (BuildContext context, Animation<double> animation,
         Animation<double> secondaryAnimation) {
       return widget;
@@ -37,7 +64,6 @@ void jumpToWidget(BuildContext context,Widget widget,int animationType){
     }));
   }
 }
-
 
 /// 创建一个平移变换
 /// 跳转过去查看源代码，可以看到有各种各样定义好的变换
